@@ -5,47 +5,42 @@
     tools:context="${relativePackage}.${activityClass}" >
 
     <TextView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="2dp"
-    android:gravity="center"
-    android:text="@string/test_name" />
-
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:gravity="center"
+        android:text="@string/test_name" />
 
     <ImageView
-    android:layout_width="match_parent"
-    android:layout_height="1px"
-    android:layout_marginTop="25dp" />
-
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginTop="25dp" />
 
     <RelativeLayout
-    android:id="@+id/account_head_item"
-    android:layout_width="fill_parent"
-    android:layout_height="76dp"
-    android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginTop="30dp" >
+        android:id="@+id/account_head_item"
+        android:layout_width="fill_parent"
+        android:layout_height="76dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="30dp" >
 
+        <TextView
+            android:id="@+id/account_head_icon_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentLeft="true"
+            android:gravity="center_vertical"
+            android:text="头像"
+            android:textColor="#494949"
+            android:textSize="16sp" />
 
-    <TextView
-    android:id="@+id/account_head_icon_tag"
-    android:layout_width="wrap_content"
-    android:layout_height="fill_parent"
-    android:layout_alignParentLeft="true"
-    android:gravity="center_vertical"
-    android:text="头像"
-    android:textColor="#494949"
-    android:textSize="16sp" />
-
-
-    <ImageView
-    android:id="@+id/head_value"
-    android:layout_width="60dp"
-    android:layout_height="60dp"
-    android:layout_alignParentRight="true"
-    android:layout_centerVertical="true"
-    android:background="@drawable/go_account_default_new_head_icon" />
+        <ImageView
+            android:id="@+id/head_value"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/go_account_default_new_head_icon" />
     </RelativeLayout>
-
 
 </RelativeLayout>

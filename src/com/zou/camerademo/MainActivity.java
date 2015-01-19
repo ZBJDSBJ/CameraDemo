@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 /**
  * <br>类描述:  主函数
@@ -31,7 +32,7 @@ import android.widget.RelativeLayout;
  * @author  zou
  * @date  [2015-1-4]
  */
-public class MainActivity extends Activity implements View.OnClickListener{
+public class MainActivity extends Activity implements View.OnClickListener {
 	private RelativeLayout mAcountHeadIconLayout;
 	private ImageView mAcountHeadIcon;
 
@@ -62,7 +63,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
 
 		mAcountHeadIconLayout = (RelativeLayout) findViewById(R.id.account_head_item);
 		mAcountHeadIconLayout.setOnClickListener(this);
@@ -98,7 +98,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							if (mIsKitKat) {
-								SelectImageUriAfterKikat();
+								selectImageUriAfterKikat();
 							} else {
 								cropImageUri();
 							}
@@ -121,47 +121,73 @@ public class MainActivity extends Activity implements View.OnClickListener{
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == SELECT_A_PICTURE) {
 			if (resultCode == RESULT_OK && null != data) {
-				Log.i("zou", "4.4以下的");
+				//				Log.i("zou", "4.4以下的");
 				Bitmap bitmap = decodeUriAsBitmap(Uri.fromFile(new File(IMGPATH,
 						TMP_IMAGE_FILE_NAME)));
 				mAcountHeadIcon.setImageBitmap(bitmap);
+			} else if (resultCode == RESULT_CANCELED) {
+				Toast.makeText(MainActivity.this, "取消头像设置", Toast.LENGTH_SHORT).show();
 			}
 		} else if (requestCode == SELECET_A_PICTURE_AFTER_KIKAT) {
 			if (resultCode == RESULT_OK && null != data) {
-				Log.i("zou", "4.4以上上的");
-				mAlbumPicturePath = getPath(MainActivity.this, data.getData());
+//				Log.i("zou", "4.4以上的");
+				mAlbumPicturePath = getPath(getApplicationContext(), data.getData());
 				cropImageUriAfterKikat(Uri.fromFile(new File(mAlbumPicturePath)));
+			} else if (resultCode == RESULT_CANCELED) {
+				Toast.makeText(MainActivity.this, "取消头像设置", Toast.LENGTH_SHORT).show();
 			}
 		} else if (requestCode == SET_ALBUM_PICTURE_KITKAT) {
 			Log.i("zou", "4.4以上上的 RESULT_OK");
-			Bitmap bitmap = data.getParcelableExtra("data");
+			
+			Bitmap bitmap = decodeUriAsBitmap(Uri.fromFile(new File(IMGPATH, TMP_IMAGE_FILE_NAME)));
 			mAcountHeadIcon.setImageBitmap(bitmap);
+			
+//			Log.i("zou", "4.4以上上的 RESULT_OK");
+//			Bitmap bitmap = data.getParcelableExtra("data");
+//			mAcountHeadIcon.setImageBitmap(bitmap);
 		} else if (requestCode == TAKE_A_PICTURE) {
-			Log.i("zou", "resultCode:" + resultCode);
-			cameraCropImageUri(Uri.fromFile(new File(IMGPATH, IMAGE_FILE_NAME)));
-		} else if (requestCode == SET_PICTURE) {
-			Log.i("zou", "SET_PICTURE-resultCode:" + resultCode);
-
-			Bitmap bitmap = null;
-			if (mIsKitKat) {
-				if (null != data) {
-					bitmap = data.getParcelableExtra("data");
-				}
+			Log.i("zou", "TAKE_A_PICTURE-resultCode:" + resultCode);
+			if (resultCode == RESULT_OK) {
+				cameraCropImageUri(Uri.fromFile(new File(IMGPATH, IMAGE_FILE_NAME)));
 			} else {
-				bitmap = decodeUriAsBitmap(Uri.fromFile(new File(IMGPATH, IMAGE_FILE_NAME)));
+				Toast.makeText(MainActivity.this, "取消头像设置", Toast.LENGTH_SHORT).show();
 			}
-			mAcountHeadIcon.setImageBitmap(bitmap);
+		} else if (requestCode == SET_PICTURE) {
+			//拍照的设置头像  不考虑版本
+			//			Log.i("zou", "SET_PICTURE-resultCode:" + resultCode);
+			Bitmap bitmap = null;
+			//			if (mIsKitKat) {  //高版本
+			//				if (null != data) {
+			//					bitmap = data.getParcelableExtra("data");
+			//					showLoading();
+			//					mAccountControl.resetGoUserIcon(bitmap2byte(bitmap), this);
+			//				} else {  //高版本不能通过“data”获取到图片数据的就用uri
+			//					if (resultCode == RESULT_OK) {
+			//						bitmap = decodeUriAsBitmap(Uri.fromFile(new File(IMGPATH, IMAGE_FILE_NAME)));
+			//						showLoading();
+			//						mAccountControl.resetGoUserIcon(bitmap2byte(bitmap), this);
+			//					}
+			//				}
+			//			} else {  //低版本
+			if (resultCode == RESULT_OK && null != data) {
+				bitmap = decodeUriAsBitmap(Uri.fromFile(new File(IMGPATH, IMAGE_FILE_NAME)));
+				mAcountHeadIcon.setImageBitmap(bitmap);
+			} else if (resultCode == RESULT_CANCELED) {
+				Toast.makeText(MainActivity.this, "取消头像设置", Toast.LENGTH_SHORT).show();
+			} else {
+				Toast.makeText(MainActivity.this, "设置头像失败", Toast.LENGTH_SHORT).show();
+			}
+			//			}
 		}
 	}
-
-	/** 
-	 * <br>功能简述:4.4以下从相册选照片并剪切
+	
+	/** <br>功能简述:裁剪图片方法实现---------------------- 相册
 	 * <br>功能详细描述:
 	 * <br>注意:
 	 */
 	private void cropImageUri() {
 		Intent intent = new Intent(Intent.ACTION_GET_CONTENT, null);
-		intent.setType("image/jpeg");
+		intent.setType("image/*");
 		intent.putExtra("crop", "true");
 		intent.putExtra("aspectX", 1);
 		intent.putExtra("aspectY", 1);
@@ -176,44 +202,22 @@ public class MainActivity extends Activity implements View.OnClickListener{
 		startActivityForResult(intent, SELECT_A_PICTURE);
 	}
 
-	/** 
-	 * <br>功能简述:4.4及以上从相册选择照片
+	
+	/**
+	 *  <br>功能简述:4.4以上裁剪图片方法实现---------------------- 相册
 	 * <br>功能详细描述:
 	 * <br>注意:
 	 */
 	@TargetApi(Build.VERSION_CODES.KITKAT)
-	private void SelectImageUriAfterKikat() {
+	private void selectImageUriAfterKikat() {
 		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 		intent.addCategory(Intent.CATEGORY_OPENABLE);
-		intent.setType("image/jpeg");
-		intent.putExtra("outputX", 640);
-		intent.putExtra("outputY", 640);
+		intent.setType("image/*");
 		startActivityForResult(intent, SELECET_A_PICTURE_AFTER_KIKAT);
 	}
 	
 	/** 
-	 * <br>功能简述: 4.4及以上选取照片后剪切方法
-	 * <br>功能详细描述:
-	 * <br>注意:
-	 * @param uri
-	 */
-	private void cropImageUriAfterKikat(Uri uri) {
-		Intent intent = new Intent("com.android.camera.action.CROP");
-		intent.setDataAndType(uri, "image/jpeg");
-		intent.putExtra("crop", "true");
-		intent.putExtra("aspectX", 1);
-		intent.putExtra("aspectY", 1);
-		intent.putExtra("outputX", 640);
-		intent.putExtra("outputY", 640);
-		intent.putExtra("scale", true);
-		intent.putExtra("return-data", true);
-		intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-		intent.putExtra("noFaceDetection", true); // no face detection
-		startActivityForResult(intent, SET_ALBUM_PICTURE_KITKAT);
-	}
-
-	/** 
-	 * <br>功能简述:对拍照的图片剪切
+	 * <br>功能简述:裁剪图片方法实现----------------------相机
 	 * <br>功能详细描述:
 	 * <br>注意:
 	 * @param uri
@@ -227,17 +231,49 @@ public class MainActivity extends Activity implements View.OnClickListener{
 		intent.putExtra("outputX", 640);
 		intent.putExtra("outputY", 640);
 		intent.putExtra("scale", true);
-		if (mIsKitKat) {
-			intent.putExtra("return-data", true);
-		} else {
-			intent.putExtra("return-data", false);
-			intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-		}
+		//		if (mIsKitKat) {
+		//			intent.putExtra("return-data", true);
+		//			intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+		//		} else {
+		intent.putExtra("return-data", false);
+		intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+		//		}
 		intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
 		intent.putExtra("noFaceDetection", true);
 		startActivityForResult(intent, SET_PICTURE);
 	}
 
+	/** 
+	 * <br>功能简述: 4.4及以上改动版裁剪图片方法实现 --------------------相机
+	 * <br>功能详细描述:
+	 * <br>注意:
+	 * @param uri
+	 */
+	private void cropImageUriAfterKikat(Uri uri) {
+		Intent intent = new Intent("com.android.camera.action.CROP");
+		intent.setDataAndType(uri, "image/jpeg");
+		intent.putExtra("crop", "true");
+		intent.putExtra("aspectX", 1);
+		intent.putExtra("aspectY", 1);
+		intent.putExtra("outputX", 640);
+		intent.putExtra("outputY", 640);
+		intent.putExtra("scale", true);
+		//		intent.putExtra("return-data", true);
+		intent.putExtra("return-data", false);
+		intent.putExtra(MediaStore.EXTRA_OUTPUT,
+				Uri.fromFile(new File(IMGPATH, TMP_IMAGE_FILE_NAME)));
+		intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+		intent.putExtra("noFaceDetection", true);
+		startActivityForResult(intent, SET_ALBUM_PICTURE_KITKAT);
+	}
+
+	/** 
+	 * <br>功能简述:
+	 * <br>功能详细描述:
+	 * <br>注意:
+	 * @param uri
+	 * @return
+	 */
 	private Bitmap decodeUriAsBitmap(Uri uri) {
 		Bitmap bitmap = null;
 		try {
